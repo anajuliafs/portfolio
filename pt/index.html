@@ -369,7 +369,8 @@
 
     /* OTHER WORK */
     .other-work { background: var(--bg); }
-    .ow-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 40px; }
+    .ow-grid { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 40px; }
+    @media (min-width: 900px) { .ow-grid .ow-card { display: grid; grid-template-columns: 1.3fr 1fr; } .ow-grid .ow-body { justify-content: center; } }
     .ow-card { background: var(--bg); color: inherit; text-decoration: none; display: flex; flex-direction: column; transition: background 0.4s; }
     a.ow-card:hover { background: var(--bg2); }
     a.ow-card:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -923,6 +924,7 @@
           mercado livre de energia no Dynamics 365
         </span>
 <div class="case-tags">
+          <span class="case-tag">🔒 Com senha</span>
 <span class="case-tag">Pesquisa</span>
 <span class="case-tag">B2B CRM</span>
 </div>
@@ -936,6 +938,7 @@
           para os produtos digitais da Comgás
         </span>
 <div class="case-tags">
+          <span class="case-tag">🔒 Com senha</span>
 <span class="case-tag">Design System</span>
 <span class="case-tag">Projeto em equipe</span>
 </div>
@@ -974,18 +977,6 @@
 <p class="ow-meta">Assistir no YouTube ↗</p>
 </div>
 </a>
-<div class="ow-card ow-static reveal">
-<div class="ow-body">
-<p class="ow-kind">Web · Redesign</p>
-<h3 class="ow-title">Homepage Comgás</h3>
-<p class="ow-text">Redesign da homepage da maior distribuidora de gás natural do Brasil, organizando a página em torno das tarefas mais frequentes dos clientes.</p>
-<ul class="ow-stats">
-<li><b>+42%</b><span>Conclusão de tarefas no teste de usabilidade</span></li>
-<li><b>−38%</b><span>Tempo nas tarefas dos fluxos principais</span></li>
-<li><b>2×</b><span>Conversão dos CTAs nos principais serviços</span></li>
-</ul>
-</div>
-</div>
 </div>
 </div>
 </section>

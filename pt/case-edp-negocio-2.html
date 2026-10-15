@@ -2,6 +2,29 @@
 
 <html lang="pt-BR">
 <head>
+  <meta name="robots" content="noindex, nofollow">
+  <script>(function(){try{if(localStorage.getItem("pf-unlock")!=="318ef97e19361df65ab17d09f78e0246ef0467b6959b6d0e8a8d6f2786b390da")document.documentElement.classList.add("locked")}catch(e){document.documentElement.classList.add("locked")}})();</script>
+  <style>
+    #gate { display: none; }
+    html.locked body { cursor: auto; overflow: hidden; }
+    html.locked body > *:not(#gate):not(script) { display: none !important; }
+    html.locked #gate { display: flex; }
+    #gate { position: fixed; inset: 0; z-index: 10000; background: var(--bg, #0a0a09); color: var(--fg, #f0ede8); align-items: center; justify-content: center; padding: 24px; }
+    #gate .g-box { width: 100%; max-width: 440px; }
+    #gate .g-eyebrow { font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent, #c8b89a); margin-bottom: 20px; }
+    #gate h1 { font-family: var(--font-display, serif); font-weight: 300; font-size: clamp(32px, 5vw, 44px); line-height: 1.1; margin-bottom: 14px; }
+    #gate p { font-family: var(--font-mono, monospace); font-size: 12px; line-height: 1.8; color: var(--fg-dim, #7a7872); }
+    #gate form { display: flex; flex-direction: column; gap: 10px; margin: 32px 0 20px; }
+    #gate label { font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-dim, #7a7872); }
+    #gate .g-row { display: flex; gap: 8px; }
+    #gate input { flex: 1; min-width: 0; background: transparent; border: 1px solid rgba(240,237,232,0.25); color: var(--fg, #f0ede8); font: 14px var(--font-mono, monospace); padding: 12px 14px; border-radius: 2px; }
+    #gate input:focus-visible, #gate button:focus-visible, #gate a:focus-visible { outline: 2px solid var(--accent, #c8b89a); outline-offset: 2px; }
+    #gate button { background: var(--accent, #c8b89a); color: #0a0a09; border: 0; font: 11px var(--font-mono, monospace); letter-spacing: 0.15em; text-transform: uppercase; padding: 0 20px; cursor: pointer; border-radius: 2px; }
+    #gate .g-err { min-height: 18px; color: #e2846f; }
+    #gate a { color: var(--fg, #f0ede8); }
+    #gate .g-back { display: inline-block; margin-top: 28px; font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-dim, #7a7872); text-decoration: none; }
+  </style>
+
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link rel="alternate" hreflang="en" href="https://anajuliafs.github.io/portifolio/case-edp-negocio-2.html">
@@ -541,6 +564,33 @@
 </style>
 </head>
 <body>
+  <div id="gate" role="dialog" aria-modal="true" aria-labelledby="g-title">
+    <div class="g-box">
+      <p class="g-eyebrow">Ana Figueiredo</p>
+      <h1 id="g-title">Este case é protegido por senha</h1>
+      <p>Ele mostra trabalho de cliente, então compartilho a senha sob pedido.</p>
+      <form id="g-form" autocomplete="off">
+        <label for="g-pass">Senha</label>
+        <div class="g-row"><input id="g-pass" type="password" required aria-describedby="g-err"><button type="submit">Entrar</button></div>
+        <p id="g-err" class="g-err" aria-live="polite"></p>
+      </form>
+      <p>Precisa da senha? Fale comigo em <a href="mailto:anajuliafsf@gmail.com">anajuliafsf@gmail.com</a></p>
+      <a class="g-back" href="index.html">← Voltar ao portfólio</a>
+    </div>
+  </div>
+  <script>(function(){
+    var H="318ef97e19361df65ab17d09f78e0246ef0467b6959b6d0e8a8d6f2786b390da",f=document.getElementById("g-form"),i=document.getElementById("g-pass"),e=document.getElementById("g-err");
+    if(document.documentElement.classList.contains("locked"))i.focus();
+    f.addEventListener("submit",function(ev){ev.preventDefault();
+      if(!(window.crypto&&crypto.subtle)){e.textContent="Senha incorreta. Tente de novo.";return}
+      crypto.subtle.digest("SHA-256",new TextEncoder().encode(i.value)).then(function(b){
+        var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("");
+        if(h===H){try{localStorage.setItem("pf-unlock",H)}catch(_){}document.documentElement.classList.remove("locked");window.scrollTo(0,0)}
+        else{e.textContent="Senha incorreta. Tente de novo.";i.select()}
+      });
+    });
+  })();</script>
+
 <div class="noise"></div>
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
