@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="alternate" hreflang="en" href="https://anajuliafs.github.io/portifolio/case-comgas-ds.html">
+  <link rel="alternate" hreflang="pt-BR" href="https://anajuliafs.github.io/portifolio/pt/case-comgas-ds.html">
+  <link rel="alternate" hreflang="x-default" href="https://anajuliafs.github.io/portifolio/case-comgas-ds.html">
+  <title>Comgás Design System — Ana Figueiredo</title>
+  <meta name="description" content="Case study: Comgás Design System — foundations, tokens, components and governance.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Syne:wght@400;600;700;800&family=Marck+Script&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a09; --bg2: #111110; --bg3: #161614;
+      --fg: #f0ede8; --fg-dim: #7a7872;
+      --accent: #c8b89a; --accent2: #e8d5b8;
+      --line: rgba(240,237,232,0.1);
+      --font-display: 'Cormorant Garamond', serif;
+      --font-sans: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --case-color: #4a7c6f;
+      --case-color-dim: rgba(74,124,111,0.15);
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--fg); font-family: var(--font-sans); cursor: none; overflow-x: hidden; }
+
+    .cursor { position: fixed; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: difference; }
+    .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid rgba(200,184,154,0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.12s ease; }
+    body:has(a:hover) .cursor-ring { width: 52px; height: 52px; opacity: 0.6; }
+
+    /* Noise texture overlay */
+    .noise {
+      position: fixed;
+      inset: -30%;
+      width: 160%; height: 160%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' seed='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.08'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.10'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      pointer-events: none;
+      z-index: 1000;
+      animation: grain 6s steps(1) infinite;
+    }
+    .noise::after {
+      content: '';
+      position: absolute; inset: -30%;
+      width: 160%; height: 160%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23f)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+      animation: grain2 9s steps(1) infinite;
+    }
+    @keyframes grain {
+      0%  { transform: translate(0,0); }
+      10% { transform: translate(-4%,-6%); }
+      20% { transform: translate(6%,2%); }
+      30% { transform: translate(-2%,8%); }
+      40% { transform: translate(8%,-4%); }
+      50% { transform: translate(-6%,4%); }
+      60% { transform: translate(4%,-8%); }
+      70% { transform: translate(-8%,2%); }
+      80% { transform: translate(2%,6%); }
+      90% { transform: translate(-4%,-2%); }
+    }
+    @keyframes grain2 {
+      0%  { transform: translate(0,0); }
+      10% { transform: translate(5%,3%); }
+      20% { transform: translate(-3%,-7%); }
+      30% { transform: translate(7%,5%); }
+      40% { transform: translate(-5%,1%); }
+      50% { transform: translate(3%,-5%); }
+      60% { transform: translate(-7%,3%); }
+      70% { transform: translate(1%,-3%); }
+      80% { transform: translate(-3%,7%); }
+      90% { transform: translate(5%,-1%); }
+    }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; transition: background 0.4s, padding 0.4s; }
+    nav.scrolled {
+      background: rgba(10,10,9,0.9);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+    }
+    nav.scrolled .nav-inner { padding-top: 18px; padding-bottom: 18px; }
+    .nav-logo { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg); text-decoration: none; opacity: 0.9; } .nav-monogram { font-family: 'Marck Script', cursive; font-size: 28px; color: var(--accent); line-height: 1; margin-right: 8px; opacity: 0.9; transition: opacity 0.3s; position: relative; top: 2px; text-transform: none; letter-spacing: 0; }
+    .nav-back { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-dim); text-decoration: none; display: flex; align-items: center; gap: 10px; transition: color 0.3s; }
+    .nav-back:hover { color: var(--fg); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+
+    /* CASE HERO */
+    .case-hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+    }
+    .case-hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 60% 30%, rgba(74,124,111,0.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 20% 70%, rgba(74,124,111,0.08) 0%, transparent 60%);
+    }
+    .case-hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(10,10,9,0.2) 0%, rgba(10,10,9,0.95) 100%);
+    }
+
+    .case-hero-index {
+      position: absolute;
+      top: 120px; right: 48px;
+      font-family: var(--font-display);
+      font-size: clamp(180px, 22vw, 320px);
+      font-weight: 300;
+      color: rgba(240,237,232,0.04);
+      line-height: 1;
+      pointer-events: none;
+      letter-spacing: -0.04em;
+    }
+
+    .case-hero-content { position: relative; }
+    .case-eyebrow {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--case-color); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 16px;
+      opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+    }
+    .case-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--case-color); }
+
+    .case-title {
+      font-family: var(--font-display);
+      font-size: clamp(64px, 9vw, 136px);
+      font-weight: 300; line-height: 0.92;
+      letter-spacing: -0.02em; color: var(--fg);
+      margin-bottom: 40px;
+      opacity: 0; animation: fadeUp 1s 0.35s forwards;
+    }
+    .case-title em { font-style: italic; color: var(--accent2); }
+
+    .case-hero-meta {
+      display: flex; gap: 80px; align-items: flex-start;
+      opacity: 0; animation: fadeUp 0.9s 0.55s forwards;
+    }
+    .meta-group { display: flex; flex-direction: column; gap: 8px; }
+    .meta-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-dim); }
+    .meta-value { font-family: var(--font-mono); font-size: 12px; color: var(--fg); letter-spacing: 0.06em; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    /* OVERVIEW BAND */
+    .overview-band {
+      background: var(--bg2);
+      padding: 80px 48px;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 80px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .overview-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); }
+    .overview-text {
+      font-family: var(--font-display); font-size: clamp(24px, 2.5vw, 36px);
+      font-weight: 300; line-height: 1.5; color: var(--fg);
+    }
+    .overview-text em { font-style: italic; color: var(--accent2); }
+
+    /* SECTIONS */
+    .case-section { padding: 100px 48px; }
+    .case-section + .case-section { border-top: 1px solid var(--line); }
+    .section-header {
+      display: grid; grid-template-columns: 200px 1fr;
+      gap: 60px; margin-bottom: 64px;
+    }
+    .section-num { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em; color: var(--fg-dim); padding-top: 6px; }
+    .section-title { font-family: var(--font-display); font-size: clamp(36px, 4vw, 56px); font-weight: 300; color: var(--fg); }
+    .section-title em { font-style: italic; color: var(--accent2); }
+
+    .section-body {
+      display: grid; grid-template-columns: 200px 1fr;
+      gap: 60px;
+    }
+    .section-body-text {
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--fg-dim); line-height: 2.1; letter-spacing: 0.04em;
+    }
+    .section-body-text p + p { margin-top: 20px; }
+    .section-body-text strong { color: var(--fg); font-weight: 400; }
+
+    /* VISUAL BLOCKS */
+    .visual-block {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      margin: 60px 48px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Mockup screens */
+    .screen-showcase {
+      padding: 60px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .screen-main {
+      flex: 1;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+    }
+    .screen-side {
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .screen-side-item {
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Simulated UI screens */
+    .ui-comgas-hero {
+      background: linear-gradient(135deg, #1a3a2e 0%, #0d2218 100%);
+      padding: 40px;
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .ui-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+    .ui-nav-logo { width: 80px; height: 20px; background: #4a9c7f; border-radius: 2px; }
+    .ui-nav-links { display: flex; gap: 16px; }
+    .ui-nav-link { width: 40px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 2px; }
+    .ui-hero-text { }
+    .ui-h1 { width: 70%; height: 32px; background: rgba(255,255,255,0.9); border-radius: 3px; margin-bottom: 12px; }
+    .ui-h1-sub { width: 50%; height: 20px; background: rgba(255,255,255,0.5); border-radius: 3px; margin-bottom: 24px; }
+    .ui-cta { width: 120px; height: 36px; background: #4a9c7f; border-radius: 4px; }
+
+    .ui-comgas-cards {
+      background: #f5f5f3;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    .ui-card { background: #fff; border-radius: 6px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .ui-card-icon { width: 28px; height: 28px; background: #e8f5f0; border-radius: 6px; margin-bottom: 10px; }
+    .ui-card-title { width: 60%; height: 10px; background: #1a3a2e; border-radius: 2px; margin-bottom: 6px; }
+    .ui-card-text { width: 80%; height: 7px; background: #d0d0ce; border-radius: 2px; }
+
+    .ui-comgas-sidebar {
+      background: #fff;
+      padding: 20px;
+      min-height: 180px;
+    }
+    .ui-sidebar-header { height: 12px; background: #1a3a2e; border-radius: 2px; width: 60%; margin-bottom: 16px; }
+    .ui-sidebar-item { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .ui-sidebar-dot { width: 8px; height: 8px; background: #4a9c7f; border-radius: 50%; flex-shrink: 0; }
+    .ui-sidebar-line { flex: 1; height: 8px; background: #eee; border-radius: 2px; }
+
+    /* Process */
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      margin-top: 48px;
+    }
+    .process-step { background: var(--bg); padding: 40px 32px; position: relative; }
+    .process-step::before {
+      content: attr(data-num);
+      font-family: var(--font-display);
+      font-size: 72px; font-weight: 300;
+      color: rgba(240,237,232,0.06);
+      position: absolute; top: 16px; right: 20px;
+      line-height: 1;
+    }
+    .process-step-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+    .process-step-title { font-family: var(--font-sans); font-size: 16px; font-weight: 600; color: var(--fg); margin-bottom: 12px; }
+    .process-step-text { font-family: var(--font-mono); font-size: 13px; color: var(--fg-dim); line-height: 1.8; }
+
+    /* Insights / callout */
+    .insight-block {
+      background: var(--case-color-dim);
+      border-left: 2px solid var(--case-color);
+      padding: 36px 40px;
+      margin-top: 40px;
+    }
+    .insight-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--case-color); margin-bottom: 16px; }
+    .insight-text { font-family: var(--font-display); font-size: clamp(20px, 2.2vw, 28px); font-weight: 300; color: var(--fg); line-height: 1.5; }
+    .insight-text em { font-style: italic; color: var(--accent2); }
+
+    /* Results */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .result-item { background: var(--bg2); padding: 48px 40px; }
+    .result-num { font-family: var(--font-display); font-size: clamp(52px, 6vw, 80px); font-weight: 300; color: var(--fg); line-height: 1; margin-bottom: 8px; }
+    .result-num span { font-style: italic; color: var(--accent2); }
+    .result-label { font-family: var(--font-mono); font-size: 13px; color: var(--fg-dim); letter-spacing: 0.08em; line-height: 1.6; }
+
+    /* Image placeholder strips */
+    .img-strip { display: grid; gap: 16px; padding: 0 48px 60px; }
+    .img-strip.cols-2 { grid-template-columns: 1fr 1fr; }
+    .img-strip.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .img-strip.cols-12 { grid-template-columns: 1.4fr 1fr; }
+    .img-placeholder {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-placeholder::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 100%);
+    }
+    .img-placeholder-label {
+      position: relative; z-index: 1;
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--fg-dim); opacity: 0.5;
+    }
+    .h-300 { height: 300px; }
+    .h-200 { height: 200px; }
+    .h-400 { height: 400px; }
+    .h-480 { height: 480px; }
+
+    /* Mockup with device frame */
+    .device-mockup {
+      padding: 60px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      background: var(--bg2);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin: 0 0 60px;
+    }
+    .browser-frame {
+      background: #1a1a18;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 60px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
+      flex: 1;
+      max-width: 780px;
+    }
+    .browser-bar {
+      background: #222220;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .browser-dots { display: flex; gap: 6px; }
+    .browser-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .browser-dot:nth-child(1) { background: #ff5f57; }
+    .browser-dot:nth-child(2) { background: #febc2e; }
+    .browser-dot:nth-child(3) { background: #28c840; }
+    .browser-url { flex: 1; background: #2a2a28; border-radius: 4px; padding: 5px 12px; font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim); margin-left: 8px; }
+    .browser-content { }
+
+    /* Next case */
+    .next-case {
+      border-top: 1px solid var(--line);
+      padding: 80px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+      background: var(--bg2);
+      transition: background 0.4s;
+    }
+    .next-case:hover { background: var(--bg3); }
+    .next-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 16px; }
+    .next-title { font-family: var(--font-display); font-size: clamp(40px, 5vw, 68px); font-weight: 300; color: var(--fg); }
+    .next-title em { font-style: italic; color: var(--accent2); }
+    .next-arrow { font-size: 40px; color: var(--accent); transition: transform 0.3s; }
+    .next-case:hover .next-arrow { transform: translateX(12px); }
+
+    footer { border-top: 1px solid var(--line); padding: 28px 48px; display: flex; justify-content: space-between; }
+    footer span { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; color: var(--fg-dim); }
+
+    .reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    @media (max-width: 768px) {
+      nav .nav-inner, nav.scrolled .nav-inner { padding: 20px 24px; }
+      nav.scrolled .nav-inner { padding-top: 20px; padding-bottom: 20px; }
+      .case-hero-inner { padding: 0 24px 56px; }
+      .overview-band { grid-template-columns: 1fr; gap: 24px; padding: 48px 24px; }
+      .case-section { padding: 60px 24px; }
+      .section-header, .section-body { grid-template-columns: 1fr; gap: 24px; }
+      .process-grid { grid-template-columns: 1fr 1fr; }
+      .results-grid { grid-template-columns: 1fr; }
+      .img-strip { padding: 0 24px 40px; }
+      .img-strip.cols-2, .img-strip.cols-3, .img-strip.cols-12 { grid-template-columns: 1fr; }
+      .device-mockup { padding: 40px 24px; flex-direction: column; }
+      .next-case { padding: 60px 24px; flex-direction: column; align-items: flex-start; gap: 32px; }
+      footer { padding: 20px 24px; }
+      .case-hero-index { display: none; }
+    }
+    /* MAX WIDTH — content only, background fills viewport */
+    body { position: relative; }
+    .page-wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .nav-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 48px;
+      transition: padding 0.4s;
+    }
+    .case-hero-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 100vh;
+      padding: 0 48px 80px;
+    }
+  
+    /* ===== Comgás DS case — extra styles ===== */
+    :root { --case-color: #3d97cc; --case-color-dim: rgba(61,151,204,0.12); }
+    .case-hero-bg {
+      background: radial-gradient(ellipse 80% 60% at 60% 30%, rgba(0,124,182,0.20) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 20% 70%, rgba(127,194,65,0.08) 0%, transparent 60%);
+    }
+
+    /* Figures with real screenshots */
+    .shot { margin: 0; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08); }
+    .shot img { display: block; width: 100%; height: auto; }
+    .shot-tall { max-height: 720px; overflow-y: auto; }
+    .fig { display: flex; flex-direction: column; gap: 14px; }
+    .fig-caption { font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); letter-spacing: 0.06em; line-height: 1.7; }
+    .img-strip .fig .shot { height: auto; }
+    .img-strip.cols-21 { grid-template-columns: 2fr 1fr; }
+    .img-strip.align-start { align-items: start; }
+
+    /* Team note */
+    .team-note { display: grid; grid-template-columns: 200px 1fr; gap: 60px; padding: 0 48px 100px; }
+    .team-note p { font-family: var(--font-display); font-size: clamp(20px, 2vw, 26px); font-weight: 300; line-height: 1.55; color: var(--fg); max-width: 760px; }
+    .team-note p em { font-style: italic; color: var(--accent2); }
+
+    /* Token architecture */
+    .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 48px; }
+    .tier { background: var(--bg); padding: 36px 32px; }
+    .tier-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--case-color); margin-bottom: 14px; }
+    .tier-title { font-family: var(--font-sans); font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+    .tier-text { font-family: var(--font-mono); font-size: 12px; color: var(--fg-dim); line-height: 1.8; margin-bottom: 20px; }
+    .token { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--fg); margin-top: 8px; }
+    .token i { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.12); }
+    .token small { color: var(--fg-dim); font-size: 10px; }
+
+    /* Palette */
+    .palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; margin-top: 56px; }
+    .palette-group h3 { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-dim); font-weight: 400; margin-bottom: 14px; }
+    .swatches { display: flex; flex-direction: column; gap: 2px; }
+    .swatch { display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 14px 10px; min-height: 52px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em; }
+    .swatch.dark { color: #fff; } .swatch.light { color: #141414; }
+
+    /* Modes */
+    .modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 40px; }
+    .mode { background: var(--bg2); padding: 28px 24px; }
+    .mode-name { font-family: var(--font-sans); font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    .mode-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); padding: 6px 0; border-top: 1px solid var(--line); }
+    .mode-row b { color: var(--fg); font-weight: 400; }
+
+    /* Type scale */
+    .type-scale { margin-top: 48px; border-top: 1px solid var(--line); }
+    .type-row { display: grid; grid-template-columns: 160px 1fr 160px; align-items: baseline; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .type-row .t-name, .type-row .t-spec { font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); }
+    .type-row .t-spec { text-align: right; }
+    .type-row .t-sample { font-family: 'Open Sans', sans-serif; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Golden rule / flow */
+    .rule-steps { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 48px; counter-reset: rule; }
+    .rule-steps li { background: var(--bg); padding: 32px 24px; counter-increment: rule; }
+    .rule-steps li::before { content: counter(rule); display: block; font-family: var(--font-display); font-size: 44px; font-weight: 300; color: var(--accent2); line-height: 1; margin-bottom: 16px; }
+    .rule-steps strong { display: block; font-family: var(--font-sans); font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .rule-steps span { font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); line-height: 1.7; }
+    .rule-steps li:last-child { background: var(--case-color-dim); }
+    .flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 28px; }
+    .flow span { font-family: var(--font-mono); font-size: 11px; color: var(--fg); padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; }
+    .flow b { color: var(--fg-dim); font-weight: 400; }
+    .sub-title { font-family: var(--font-sans); font-size: 18px; font-weight: 600; margin: 72px 0 0; }
+
+    /* Inventory */
+    .process-grid.five { grid-template-columns: repeat(5, 1fr); }
+    .results-grid.four { grid-template-columns: repeat(4, 1fr); }
+    .stat-line { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 48px; }
+    .stat { background: var(--bg2); padding: 28px 28px; }
+    .stat b { display: block; font-family: var(--font-display); font-size: 48px; font-weight: 300; color: var(--accent2); line-height: 1; margin-bottom: 10px; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); line-height: 1.7; }
+    .audit-table-wrap { overflow-x: auto; margin-top: 24px; border: 1px solid var(--line); }
+    .audit-table { width: 100%; min-width: 720px; border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
+    .audit-table th { text-align: left; font-weight: 400; color: var(--fg-dim); letter-spacing: 0.1em; text-transform: uppercase; font-size: 9px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+    .audit-table td { padding: 14px 16px; border-bottom: 1px solid var(--line); color: var(--fg); line-height: 1.6; vertical-align: top; }
+    .audit-table td:first-child { color: var(--fg-dim); width: 36px; }
+    .audit-table tr:last-child td { border-bottom: none; }
+    .shot.on-grey { background: #e9e9e9; }
+    .section-body > *, .img-strip > * { min-width: 0; }
+
+    @media (max-width: 1024px) {
+      .process-grid.five { grid-template-columns: 1fr 1fr; }
+      .results-grid.four { grid-template-columns: 1fr 1fr; }
+      .palette { grid-template-columns: 1fr 1fr; }
+      .rule-steps { grid-template-columns: 1fr 1fr; }
+      .modes { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .tiers, .modes, .palette, .rule-steps, .stat-line, .process-grid.five, .results-grid.four { grid-template-columns: 1fr; }
+      .team-note { grid-template-columns: 1fr; gap: 16px; padding: 0 24px 60px; }
+      .img-strip.cols-21 { grid-template-columns: 1fr; }
+      .type-row { grid-template-columns: 1fr; gap: 6px; }
+      .type-row .t-spec { text-align: left; }
+      .case-hero-meta { flex-wrap: wrap; gap: 28px 40px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .case-eyebrow, .case-title, .case-hero-meta { animation: none; opacity: 1; }
+      .noise, .noise::after { animation: none; }
+    }
+  
+    .process-step { min-width: 0; overflow-wrap: break-word; }
+    @media (max-width: 520px) { .process-grid, .process-grid.five { grid-template-columns: 1fr; } }
+    /* Language switch */
+    .nav-right { display: flex; align-items: center; gap: 28px; }
+    .lang-switch { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-dim); text-decoration: none; transition: color 0.3s; }
+    .lang-switch:hover, .lang-switch:focus-visible { color: var(--fg); }
+    .lang-switch b { color: var(--fg); font-weight: 400; }
+</style>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <nav id="mainNav">
+    <div class="nav-inner">    <a href="index.html" class="nav-logo"><span class="nav-monogram">af.</span> Ana Figueiredo</a>
+    <div class="nav-right"><a class="lang-switch" href="pt/case-comgas-ds.html" data-lang="pt" hreflang="pt-BR" aria-label="Ver em português"><b>EN</b> / PT</a><a href="index.html" class="nav-back">Home</a></div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="case-hero">
+    <div class="case-hero-bg"></div>
+    <div class="case-hero-inner">
+    <div class="case-hero-index">02</div>
+    <div class="case-hero-content">
+      <p class="case-eyebrow">Case Study — 02 / 03</p>
+      <h1 class="case-title">Comgás<br><em>Design System</em></h1>
+      <div class="case-hero-meta">
+        <div class="meta-group">
+          <span class="meta-label">Role</span>
+          <span class="meta-value">UX Designer</span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Team</span>
+          <span class="meta-value">2 UX Designers</span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Type</span>
+          <span class="meta-value">Design System · Governance</span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Year</span>
+          <span class="meta-value">2026</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <div class="page-wrap">
+
+  <!-- OVERVIEW -->
+  <div class="overview-band reveal">
+    <div class="overview-label">Overview</div>
+    <p class="overview-text">
+      A shared visual language for Comgás's digital products. We mapped the interfaces of four products (<em>Comgás Virtual, Smart Energia, Soluções and Quero Comgás</em>), inventoried the components in use and turned what we found into a Figma library with tokens, 42 components and a governance model the Comgás team can run on its own.
+    </p>
+  </div>
+
+  <!-- Cover -->
+  <div class="device-mockup reveal">
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dots"><div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div></div>
+        <div class="browser-url">Figma — Comgás Design System</div>
+      </div>
+      <div class="browser-content">
+        <img src="assets/cases/comgas-ds/cover.webp" alt="Cover of the Comgás Design System Figma library: white Comgás logo on brand blue" style="display:block;width:100%;height:auto;" width="1440" height="1024">
+      </div>
+    </div>
+  </div>
+
+  <!-- 01 Challenge -->
+  <div class="case-section reveal">
+    <div class="section-header">
+      <div class="section-num">01 — Challenge</div>
+      <h2 class="section-title">Many products,<br><em>no shared source</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div>
+        <div class="section-body-text">
+          <p>Comgás runs several digital fronts at once: the customer self-service area (Comgás Virtual), the services store, the Smart Energia portal and the acquisition pages for new customers. Each had grown with its own screens, grids and visual decisions.</p>
+          <p>Without a shared library, the same needs were solved again and again. Teams <strong>duplicated components</strong>, added <strong>new colors and variables without a standard</strong>, and products drifted apart. There was also no clear way to decide what should become part of the system.</p>
+          <p>Besides the components, Comgás needed a way to keep the system consistent after the project ended.</p>
+        </div>
+        <div class="insight-block">
+          <div class="insight-label">Key Insight</div>
+          <p class="insight-text">Without <em>someone responsible for the library</em>, duplication comes back, even with a good set of components.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 Process -->
+  <div class="case-section" style="background: var(--bg2);">
+    <div class="section-header reveal">
+      <div class="section-num">02 — Process</div>
+      <h2 class="section-title">How we got<br><em>there</em></h2>
+    </div>
+    <div class="process-grid five reveal">
+      <div class="process-step" data-num="1">
+        <div class="process-step-label">Discovery</div>
+        <div class="process-step-title">Interface mapping</div>
+        <div class="process-step-text">Screens in production and QA collected across four digital fronts, along with the layout grid of each product.</div>
+      </div>
+      <div class="process-step" data-num="2">
+        <div class="process-step-label">Audit</div>
+        <div class="process-step-title">Component inventory</div>
+        <div class="process-step-text">Every component and style in use catalogued, compared side by side and measured, to expose redundancies and inconsistencies.</div>
+      </div>
+      <div class="process-step" data-num="3">
+        <div class="process-step-label">Foundations</div>
+        <div class="process-step-title">Tokens &amp; styles</div>
+        <div class="process-step-text">Color, typography, spacing, radius, elevation and grid defined as variables: primitive values first, then semantic names, then responsive modes.</div>
+      </div>
+      <div class="process-step" data-num="4">
+        <div class="process-step-label">Library</div>
+        <div class="process-step-title">Components</div>
+        <div class="process-step-text">42 components built on the tokens, each documented with usage guidance and shown in app and desktop contexts, then tested on real Comgás flows.</div>
+      </div>
+      <div class="process-step" data-num="5">
+        <div class="process-step-label">Sustainability</div>
+        <div class="process-step-title">Governance</div>
+        <div class="process-step-text">A governance guide, an approval flow and a recommendation for an Owner and a Backup on the Comgás side, ready for handoff.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team note -->
+  <div class="team-note reveal" style="padding-top:80px;">
+    <div class="section-num">Team</div>
+    <p>I was one of two UX designers on this project. We mapped, inventoried, built and documented the system <em>together</em>, working closely with the Comgás team.</p>
+  </div>
+
+  <!-- 03 Inventory -->
+  <div class="case-section reveal">
+    <div class="section-header">
+      <div class="section-num">03 — Inventory</div>
+      <h2 class="section-title">Seeing the system<br><em>as it was</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div class="section-body-text">
+        <p>Before designing anything, we inventoried what already existed in Comgás Virtual's mobile experience. Every screen was broken down into its components, and each component was logged with its modifiers, states, intent, usage and a link to the screen where it was found.</p>
+        <p>Then we placed similar pieces side by side. Buttons, cards, accordions, inputs, search fields, dropdowns and steppers each appeared in <strong>several versions solving the same problem</strong>. We also measured the AS-IS values of spacing, typography, radius, shadows and color, and noted a direction for each one.</p>
+        <p>The audit gave us evidence of the inconsistencies, and it became the starting point for the foundations and the component list.</p>
+      </div>
+    </div>
+    <div class="stat-line">
+      <div class="stat"><b>82</b><span>Component patterns logged in<br>the inventory checklist</span></div>
+      <div class="stat"><b>7</b><span>Component families with<br>redundant versions</span></div>
+      <div class="stat"><b>5</b><span>Token categories audited AS-IS:<br>spacing, type, radius, shadow, color</span></div>
+    </div>
+  </div>
+
+  <div class="img-strip reveal">
+    <figure class="fig">
+      <div class="shot on-grey"><img src="assets/cases/comgas-ds/inventory-redundancies.webp" alt="Redundancy board: cards, accordions, buttons, inputs, search fields, dropdowns and steppers from production screens grouped by type" loading="lazy" width="2000" height="1680"></div>
+      <figcaption class="fig-caption">Redundancy board: similar components from production screens grouped by family.</figcaption>
+    </figure>
+  </div>
+  <div class="img-strip cols-12 align-start reveal">
+    <figure class="fig">
+      <div class="shot on-grey"><img src="assets/cases/comgas-ds/inventory-buttons-before.webp" alt="Buttons collected from production screens with different shapes, colors, sizes and radii" loading="lazy" width="1248" height="1165"></div>
+      <figcaption class="fig-caption">Before: buttons found across Comgás Virtual, each with its own shape, color and size. Compare with the unified button set in section 05.</figcaption>
+    </figure>
+    <div class="insight-block" style="margin-top:0;">
+      <div class="insight-label">What the inventory showed</div>
+      <p class="insight-text">We found <em>several versions of the same components</em>, and spacing values like 16.33px and 21.17px that didn't follow any scale.</p>
+    </div>
+  </div>
+  <div class="img-strip reveal">
+    <figure class="fig">
+      <div class="shot"><img src="assets/cases/comgas-ds/inventory-spacing-audit.webp" alt="Spacing audit of the header: measured values on the left, a table with component, observed AS-IS value and direction on the right" loading="lazy" width="2000" height="855"></div>
+      <figcaption class="fig-caption">Spacing audit: each measured value gets a direction, such as moving to an 8pt scale.</figcaption>
+    </figure>
+  </div>
+  <div class="case-section reveal" style="padding-top:20px;">
+    <div class="section-body">
+      <div class="section-num">Checklist excerpt</div>
+      <div>
+        <div class="section-body-text"><p>Each component in the inventory was described in the same structure, which later became the minimum documentation required by the governance guide.</p></div>
+        <div class="audit-table-wrap">
+          <table class="audit-table">
+            <thead><tr><th>#</th><th>Component</th><th>Modifiers</th><th>States</th><th>Intent</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Header</td><td>Logged-in, logged-out, with search, with back button, with actions</td><td>Default, scroll</td><td>Structure navigation and screen context</td></tr>
+              <tr><td>2</td><td>Search input</td><td>With icon, voice input, action button, compact</td><td>Default, focus, filled, typing</td><td>Allow direct, quick search</td></tr>
+              <tr><td>3</td><td>Modal overlay</td><td>Full screen, blocking, with header, with list</td><td>Default, open, closed</td><td>Show priority content over the interface</td></tr>
+              <tr><td>14</td><td>Primary button</td><td>Size L/M, full or intrinsic width, with icon, rounded, medium radius</td><td>Default, pressed, disabled</td><td>Main action on the screen</td></tr>
+              <tr><td>17</td><td>Card (base)</td><td>Icon + label, size S/M, elevated</td><td>Default, hover, highlight</td><td>Group related information</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 Foundations -->
+  <div class="case-section reveal">
+    <div class="section-header">
+      <div class="section-num">04 — Foundations</div>
+      <h2 class="section-title">Tokens that<br><em>carry meaning</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div class="section-body-text">
+        <p>The foundations are built in three layers of variables. <strong>Primitives</strong> hold raw values, <strong>semantic tokens</strong> describe intent (background, text, icon, border) and a <strong>responsive collection</strong> adapts typography, spacing and grid to each platform.</p>
+        <p>Designers don't pick hex values. They pick a purpose, like <strong>bg-danger</strong> or <strong>text-primary</strong>, and the token points to the right value.</p>
+      </div>
+    </div>
+
+    <div class="tiers">
+      <div class="tier">
+        <div class="tier-label">Layer 1</div>
+        <div class="tier-title">Primitives</div>
+        <div class="tier-text">Raw values with no meaning attached.</div>
+        <div class="token"><i style="background:#7fc241"></i>colors/primary/200 <small>#7FC241</small></div>
+        <div class="token"><i style="background:#007cb6"></i>colors/secondary/200 <small>#007CB6</small></div>
+        <div class="token"><i style="background:#e74646"></i>colors/feedback/danger/100 <small>#E74646</small></div>
+      </div>
+      <div class="tier">
+        <div class="tier-label">Layer 2</div>
+        <div class="tier-title">Semantic</div>
+        <div class="tier-text">Names that describe intent, pointing to primitives.</div>
+        <div class="token"><i style="background:#7fc241"></i>background/bg-primary</div>
+        <div class="token"><i style="background:#007cb6"></i>text/text-secondary</div>
+        <div class="token"><i style="background:#e74646"></i>background/bg-danger</div>
+      </div>
+      <div class="tier">
+        <div class="tier-label">Layer 3</div>
+        <div class="tier-title">Responsive</div>
+        <div class="tier-text">Type, spacing and grid values that switch per platform mode.</div>
+        <div class="token">typography/h1/font-size</div>
+        <div class="token">component/gap-medium</div>
+        <div class="token">grid/widths/grid-columns</div>
+      </div>
+    </div>
+
+    <div class="palette">
+      <div class="palette-group">
+        <h3>Primary</h3>
+        <div class="swatches">
+          <div class="swatch dark" style="background:#629c2d"><span>300</span><span>#629C2D</span></div>
+          <div class="swatch light" style="background:#7fc241"><span>200</span><span>#7FC241</span></div>
+          <div class="swatch light" style="background:#c3e9a1"><span>100</span><span>#C3E9A1</span></div>
+        </div>
+      </div>
+      <div class="palette-group">
+        <h3>Secondary</h3>
+        <div class="swatches">
+          <div class="swatch dark" style="background:#0069a6"><span>300</span><span>#0069A6</span></div>
+          <div class="swatch dark" style="background:#007cb6"><span>200</span><span>#007CB6</span></div>
+          <div class="swatch light" style="background:#9ccfe7"><span>100</span><span>#9CCFE7</span></div>
+        </div>
+      </div>
+      <div class="palette-group">
+        <h3>Feedback</h3>
+        <div class="swatches">
+          <div class="swatch dark" style="background:#b12f30"><span>Danger</span><span>#B12F30</span></div>
+          <div class="swatch light" style="background:#f89c1b"><span>Warning</span><span>#F89C1B</span></div>
+          <div class="swatch dark" style="background:#004b87"><span>Info</span><span>#004B87</span></div>
+        </div>
+      </div>
+      <div class="palette-group">
+        <h3>Neutral</h3>
+        <div class="swatches">
+          <div class="swatch dark" style="background:#141414"><span>600</span><span>#141414</span></div>
+          <div class="swatch dark" style="background:#6e6e6e"><span>400</span><span>#6E6E6E</span></div>
+          <div class="swatch light" style="background:#eeeeee"><span>200</span><span>#EEEEEE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub-title">Four platform modes</h3>
+    <div class="modes">
+      <div class="mode"><div class="mode-name">App</div>
+        <div class="mode-row"><span>Viewport</span><b>375 × 812</b></div>
+        <div class="mode-row"><span>Columns</span><b>4</b></div>
+        <div class="mode-row"><span>Gutter</span><b>16</b></div></div>
+      <div class="mode"><div class="mode-name">Mobile</div>
+        <div class="mode-row"><span>Viewport</span><b>375 × 812</b></div>
+        <div class="mode-row"><span>Columns</span><b>4</b></div>
+        <div class="mode-row"><span>Gutter</span><b>16</b></div></div>
+      <div class="mode"><div class="mode-name">Desktop</div>
+        <div class="mode-row"><span>Viewport</span><b>1440 × 1024</b></div>
+        <div class="mode-row"><span>Columns</span><b>12</b></div>
+        <div class="mode-row"><span>Gutter</span><b>24</b></div></div>
+      <div class="mode"><div class="mode-name">Dashboard</div>
+        <div class="mode-row"><span>Viewport</span><b>1440 × 1024</b></div>
+        <div class="mode-row"><span>Columns</span><b>12</b></div>
+        <div class="mode-row"><span>Gutter</span><b>24</b></div></div>
+    </div>
+
+    <h3 class="sub-title">Type scale — Open Sans</h3>
+    <div class="type-scale">
+      <div class="type-row"><span class="t-name">display lg</span><span class="t-sample" style="font-size:48px;font-weight:700">Gás encanado</span><span class="t-spec">Bold 48</span></div>
+      <div class="type-row"><span class="t-name">display sm</span><span class="t-sample" style="font-size:32px;font-weight:700">Minha conta</span><span class="t-spec">Bold 32</span></div>
+      <div class="type-row"><span class="t-name">h1</span><span class="t-sample" style="font-size:28px;font-weight:700">Contas e pagamentos</span><span class="t-spec">Bold 28</span></div>
+      <div class="type-row"><span class="t-name">h2</span><span class="t-sample" style="font-size:24px;font-weight:600">Histórico de consumo</span><span class="t-spec">SemiBold 24</span></div>
+      <div class="type-row"><span class="t-name">large</span><span class="t-sample" style="font-size:16px;font-weight:400">Acompanhe seu consumo dos últimos 12 meses.</span><span class="t-spec">Regular 16</span></div>
+      <div class="type-row"><span class="t-name">small</span><span class="t-sample" style="font-size:12px;font-weight:400">Data de vencimento sem juros ou multa.</span><span class="t-spec">Regular 12</span></div>
+    </div>
+  </div>
+
+  <div class="img-strip cols-21 align-start reveal">
+    <figure class="fig">
+      <div class="shot shot-tall"><img src="assets/cases/comgas-ds/foundations-colors.webp" alt="Colors documentation page with primary, secondary, neutral, danger, warning, info and extra palettes" loading="lazy" width="1311" height="1800"></div>
+      <figcaption class="fig-caption">Color documentation in Figma: each palette explains when to use it.</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="shot shot-tall"><img src="assets/cases/comgas-ds/foundations-typography.webp" alt="Typography documentation page for Open Sans styles" loading="lazy" width="496" height="1800"></div>
+      <figcaption class="fig-caption">Typography page with 12 text styles.</figcaption>
+    </figure>
+  </div>
+
+  <!-- 05 Components -->
+  <div class="case-section reveal" style="background: var(--bg2);">
+    <div class="section-header">
+      <div class="section-num">05 — Components</div>
+      <h2 class="section-title">42 components,<br><em>one behavior</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div class="section-body-text">
+        <p>Every component, from buttons and inputs to bottom sheets, date pickers and charts, uses only the system's variables. Each page opens with what the component is for and a short list of good practices, followed by the full variant set.</p>
+        <p>Components are shown <strong>in context</strong>, in app and desktop frames, so the team can see how the same piece behaves on each platform before using it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="img-strip cols-2 align-start reveal" style="padding-top:60px;">
+    <figure class="fig">
+      <div class="shot shot-tall"><img src="assets/cases/comgas-ds/component-button-matrix.webp" alt="Button component variant matrix: primary, secondary, outline, ghost and danger, across sizes, states and icon options" loading="lazy" width="928" height="1190"></div>
+      <figcaption class="fig-caption">Button variants for hierarchy, size, state and icon placement.</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="shot shot-tall"><img src="assets/cases/comgas-ds/component-cards-app.webp" alt="Card components applied in a mobile app frame" loading="lazy" width="750" height="1624"></div>
+      <figcaption class="fig-caption">Cards in the app context.</figcaption>
+    </figure>
+  </div>
+  <div class="img-strip reveal">
+    <figure class="fig">
+      <div class="shot"><img src="assets/cases/comgas-ds/component-cards-desktop.webp" alt="Card components applied in a desktop layout" loading="lazy" width="1140" height="765"></div>
+      <figcaption class="fig-caption">The same cards in the desktop context.</figcaption>
+    </figure>
+  </div>
+  <div class="img-strip reveal">
+    <figure class="fig">
+      <div class="shot"><img src="assets/cases/comgas-ds/applied-cart-desktop.webp" alt="Services store cart screen rebuilt with the design system: stepper, service table, coupon field and order summary" loading="lazy" width="1440" height="1086"></div>
+      <figcaption class="fig-caption">Applied test: the services store cart rebuilt with library components.</figcaption>
+    </figure>
+  </div>
+
+  <!-- 06 Governance -->
+  <div class="case-section reveal">
+    <div class="section-header">
+      <div class="section-num">06 — Governance</div>
+      <h2 class="section-title">A system that<br><em>outlives the project</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div class="section-body-text">
+        <p>We wrote a governance guide (v1.0) that defines roles, principles, accessibility checks, criteria for adding components, a deprecation process and a monthly 30-minute health review.</p>
+        <p>We also recommended that Comgás name an <strong>Owner</strong> and a <strong>Backup</strong> for the library. This person doesn't need to be a design systems specialist. They need interest in organization, a systemic view and knowledge of Comgás's products.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-title">The golden rule — before creating anything new</h3>
+    <ol class="rule-steps">
+      <li><strong>Reuse</strong><span>Check if an existing component already solves it.</span></li>
+      <li><strong>Adapt</strong><span>Adjust content or layout within the component.</span></li>
+      <li><strong>Add a variant</strong><span>Extend with a property or state.</span></li>
+      <li><strong>Add a variable</strong><span>Only with alignment from the Owner.</span></li>
+      <li><strong>Create a component</strong><span>The last resort, when the need is real.</span></li>
+    </ol>
+
+    <h3 class="sub-title">Approval flow</h3>
+    <div class="flow">
+      <span>Need</span><b>→</b><span>Check existing component</span><b>→</b><span>Proposal</span><b>→</b><span>Owner review</span><b>→</b><span>Added to library</span><b>→</b><span>New version published</span>
+    </div>
+  </div>
+
+  <div class="img-strip cols-12 align-start reveal">
+    <figure class="fig">
+      <div class="shot"><img src="assets/cases/comgas-ds/governance-checklist.webp" alt="Evaluation checklist from the governance guide with four yes/no questions" loading="lazy" width="876" height="712"></div>
+      <figcaption class="fig-caption">Evaluation checklist from the governance guide (in Portuguese).</figcaption>
+    </figure>
+    <div class="insight-block" style="margin-top:0;">
+      <div class="insight-label">Principle</div>
+      <p class="insight-text">Reuse → Evolve → Standardize → Document. <em>Only create something new when there's a real need.</em></p>
+    </div>
+  </div>
+
+  <!-- 07 Results -->
+  <div class="case-section" style="background: var(--bg2);">
+    <div class="section-header reveal">
+      <div class="section-num">07 — Results</div>
+      <h2 class="section-title">What we<br><em>delivered</em></h2>
+    </div>
+    <div class="results-grid four reveal">
+      <div class="result-item">
+        <div class="result-num"><span>82</span></div>
+        <div class="result-label">Component patterns inventoried<br>to find inconsistencies</div>
+      </div>
+      <div class="result-item">
+        <div class="result-num"><span>42</span></div>
+        <div class="result-label">Documented components<br>in the published library</div>
+      </div>
+      <div class="result-item">
+        <div class="result-num"><span>258</span></div>
+        <div class="result-label">Variables across primitive,<br>semantic and responsive layers</div>
+      </div>
+      <div class="result-item">
+        <div class="result-num"><span>4</span></div>
+        <div class="result-label">Platform modes: app, mobile,<br>desktop and dashboard</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next case -->
+  <a href="case-myklik.html" class="next-case">
+    <div>
+      <p class="next-label">Next Case — 03 / 03</p>
+      <h2 class="next-title">My<em>Klik</em></h2>
+    </div>
+    <span class="next-arrow">→</span>
+  </a>
+
+  <footer>
+    <span>© 2026 Ana Figueiredo</span>
+    <span>UX Designer — Brazil</span>
+  </footer>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; cursor.style.left = mouseX+'px'; cursor.style.top = mouseY+'px'; });
+    (function animRing() { ringX += (mouseX-ringX)*0.12; ringY += (mouseY-ringY)*0.12; cursorRing.style.left = ringX+'px'; cursorRing.style.top = ringY+'px'; requestAnimationFrame(animRing); })();
+    const reveals = document.querySelectorAll('.reveal');
+    new IntersectionObserver((entries) => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');} }), {threshold:0.08, rootMargin:'0px 0px -50px 0px'}).observe || null;
+    const obs = new IntersectionObserver((entries) => entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); } }), {threshold:0.08});
+    reveals.forEach(el => obs.observe(el));
+  
+    // NAV SCROLL
+    var navEl = document.getElementById('mainNav');
+    window.addEventListener('scroll', function() {
+      navEl.classList.toggle('scrolled', window.scrollY > 40);
+    });
+  </script>
+  </div><!-- /.page-wrap -->
+<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-lang]");if(a){try{localStorage.setItem("lang",a.getAttribute("data-lang"))}catch(_){}}});</script>
+</body>
+</html>

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="alternate" hreflang="en" href="https://anajuliafs.github.io/portifolio/case-edp-negocio-2.html">
+  <link rel="alternate" hreflang="pt-BR" href="https://anajuliafs.github.io/portifolio/pt/case-edp-negocio-2.html">
+  <link rel="alternate" hreflang="x-default" href="https://anajuliafs.github.io/portifolio/case-edp-negocio-2.html">
+  <title>EDP Negócio 2.0 — Ana Figueiredo</title>
+  <meta name="description" content="Case study: EDP Negócio 2.0 — redesigning the free energy market sales journey in Dynamics 365.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Syne:wght@400;600;700;800&family=Marck+Script&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a09; --bg2: #111110; --bg3: #161614;
+      --fg: #f0ede8; --fg-dim: #7a7872;
+      --accent: #c8b89a; --accent2: #e8d5b8;
+      --line: rgba(240,237,232,0.1);
+      --font-display: 'Cormorant Garamond', serif;
+      --font-sans: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --case-color: #4a7c6f;
+      --case-color-dim: rgba(74,124,111,0.15);
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--fg); font-family: var(--font-sans); cursor: none; overflow-x: hidden; }
+
+    .cursor { position: fixed; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: difference; }
+    .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid rgba(200,184,154,0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.12s ease; }
+    body:has(a:hover) .cursor-ring { width: 52px; height: 52px; opacity: 0.6; }
+
+    /* Noise texture overlay */
+    .noise {
+      position: fixed;
+      inset: -30%;
+      width: 160%; height: 160%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' seed='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.08'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.10'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      pointer-events: none;
+      z-index: 1000;
+      animation: grain 6s steps(1) infinite;
+    }
+    .noise::after {
+      content: '';
+      position: absolute; inset: -30%;
+      width: 160%; height: 160%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23f)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+      animation: grain2 9s steps(1) infinite;
+    }
+    @keyframes grain {
+      0%  { transform: translate(0,0); }
+      10% { transform: translate(-4%,-6%); }
+      20% { transform: translate(6%,2%); }
+      30% { transform: translate(-2%,8%); }
+      40% { transform: translate(8%,-4%); }
+      50% { transform: translate(-6%,4%); }
+      60% { transform: translate(4%,-8%); }
+      70% { transform: translate(-8%,2%); }
+      80% { transform: translate(2%,6%); }
+      90% { transform: translate(-4%,-2%); }
+    }
+    @keyframes grain2 {
+      0%  { transform: translate(0,0); }
+      10% { transform: translate(5%,3%); }
+      20% { transform: translate(-3%,-7%); }
+      30% { transform: translate(7%,5%); }
+      40% { transform: translate(-5%,1%); }
+      50% { transform: translate(3%,-5%); }
+      60% { transform: translate(-7%,3%); }
+      70% { transform: translate(1%,-3%); }
+      80% { transform: translate(-3%,7%); }
+      90% { transform: translate(5%,-1%); }
+    }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; transition: background 0.4s, padding 0.4s; }
+    nav.scrolled {
+      background: rgba(10,10,9,0.9);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+    }
+    nav.scrolled .nav-inner { padding-top: 18px; padding-bottom: 18px; }
+    .nav-logo { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg); text-decoration: none; opacity: 0.9; } .nav-monogram { font-family: 'Marck Script', cursive; font-size: 28px; color: var(--accent); line-height: 1; margin-right: 8px; opacity: 0.9; transition: opacity 0.3s; position: relative; top: 2px; text-transform: none; letter-spacing: 0; }
+    .nav-back { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-dim); text-decoration: none; display: flex; align-items: center; gap: 10px; transition: color 0.3s; }
+    .nav-back:hover { color: var(--fg); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+
+    /* CASE HERO */
+    .case-hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+    }
+    .case-hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 60% 30%, rgba(74,124,111,0.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 20% 70%, rgba(74,124,111,0.08) 0%, transparent 60%);
+    }
+    .case-hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(10,10,9,0.2) 0%, rgba(10,10,9,0.95) 100%);
+    }
+
+    .case-hero-index {
+      position: absolute;
+      top: 120px; right: 48px;
+      font-family: var(--font-display);
+      font-size: clamp(180px, 22vw, 320px);
+      font-weight: 300;
+      color: rgba(240,237,232,0.04);
+      line-height: 1;
+      pointer-events: none;
+      letter-spacing: -0.04em;
+    }
+
+    .case-hero-content { position: relative; }
+    .case-eyebrow {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--case-color); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 16px;
+      opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+    }
+    .case-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--case-color); }
+
+    .case-title {
+      font-family: var(--font-display);
+      font-size: clamp(64px, 9vw, 136px);
+      font-weight: 300; line-height: 0.92;
+      letter-spacing: -0.02em; color: var(--fg);
+      margin-bottom: 40px;
+      opacity: 0; animation: fadeUp 1s 0.35s forwards;
+    }
+    .case-title em { font-style: italic; color: var(--accent2); }
+
+    .case-hero-meta {
+      display: flex; gap: 80px; align-items: flex-start;
+      opacity: 0; animation: fadeUp 0.9s 0.55s forwards;
+    }
+    .meta-group { display: flex; flex-direction: column; gap: 8px; }
+    .meta-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-dim); }
+    .meta-value { font-family: var(--font-mono); font-size: 12px; color: var(--fg); letter-spacing: 0.06em; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    /* OVERVIEW BAND */
+    .overview-band {
+      background: var(--bg2);
+      padding: 80px 48px;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 80px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .overview-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); }
+    .overview-text {
+      font-family: var(--font-display); font-size: clamp(24px, 2.5vw, 36px);
+      font-weight: 300; line-height: 1.5; color: var(--fg);
+    }
+    .overview-text em { font-style: italic; color: var(--accent2); }
+
+    /* SECTIONS */
+    .case-section { padding: 100px 48px; }
+    .case-section + .case-section { border-top: 1px solid var(--line); }
+    .section-header {
+      display: grid; grid-template-columns: 200px 1fr;
+      gap: 60px; margin-bottom: 64px;
+    }
+    .section-num { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em; color: var(--fg-dim); padding-top: 6px; }
+    .section-title { font-family: var(--font-display); font-size: clamp(36px, 4vw, 56px); font-weight: 300; color: var(--fg); }
+    .section-title em { font-style: italic; color: var(--accent2); }
+
+    .section-body {
+      display: grid; grid-template-columns: 200px 1fr;
+      gap: 60px;
+    }
+    .section-body-text {
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--fg-dim); line-height: 2.1; letter-spacing: 0.04em;
+    }
+    .section-body-text p + p { margin-top: 20px; }
+    .section-body-text strong { color: var(--fg); font-weight: 400; }
+
+    /* VISUAL BLOCKS */
+    .visual-block {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      margin: 60px 48px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Mockup screens */
+    .screen-showcase {
+      padding: 60px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .screen-main {
+      flex: 1;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+    }
+    .screen-side {
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .screen-side-item {
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Simulated UI screens */
+    .ui-comgas-hero {
+      background: linear-gradient(135deg, #1a3a2e 0%, #0d2218 100%);
+      padding: 40px;
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .ui-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+    .ui-nav-logo { width: 80px; height: 20px; background: #4a9c7f; border-radius: 2px; }
+    .ui-nav-links { display: flex; gap: 16px; }
+    .ui-nav-link { width: 40px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 2px; }
+    .ui-hero-text { }
+    .ui-h1 { width: 70%; height: 32px; background: rgba(255,255,255,0.9); border-radius: 3px; margin-bottom: 12px; }
+    .ui-h1-sub { width: 50%; height: 20px; background: rgba(255,255,255,0.5); border-radius: 3px; margin-bottom: 24px; }
+    .ui-cta { width: 120px; height: 36px; background: #4a9c7f; border-radius: 4px; }
+
+    .ui-comgas-cards {
+      background: #f5f5f3;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    .ui-card { background: #fff; border-radius: 6px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .ui-card-icon { width: 28px; height: 28px; background: #e8f5f0; border-radius: 6px; margin-bottom: 10px; }
+    .ui-card-title { width: 60%; height: 10px; background: #1a3a2e; border-radius: 2px; margin-bottom: 6px; }
+    .ui-card-text { width: 80%; height: 7px; background: #d0d0ce; border-radius: 2px; }
+
+    .ui-comgas-sidebar {
+      background: #fff;
+      padding: 20px;
+      min-height: 180px;
+    }
+    .ui-sidebar-header { height: 12px; background: #1a3a2e; border-radius: 2px; width: 60%; margin-bottom: 16px; }
+    .ui-sidebar-item { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .ui-sidebar-dot { width: 8px; height: 8px; background: #4a9c7f; border-radius: 50%; flex-shrink: 0; }
+    .ui-sidebar-line { flex: 1; height: 8px; background: #eee; border-radius: 2px; }
+
+    /* Process */
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      margin-top: 48px;
+    }
+    .process-step { background: var(--bg); padding: 40px 32px; position: relative; }
+    .process-step::before {
+      content: attr(data-num);
+      font-family: var(--font-display);
+      font-size: 72px; font-weight: 300;
+      color: rgba(240,237,232,0.06);
+      position: absolute; top: 16px; right: 20px;
+      line-height: 1;
+    }
+    .process-step-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+    .process-step-title { font-family: var(--font-sans); font-size: 16px; font-weight: 600; color: var(--fg); margin-bottom: 12px; }
+    .process-step-text { font-family: var(--font-mono); font-size: 13px; color: var(--fg-dim); line-height: 1.8; }
+
+    /* Insights / callout */
+    .insight-block {
+      background: var(--case-color-dim);
+      border-left: 2px solid var(--case-color);
+      padding: 36px 40px;
+      margin-top: 40px;
+    }
+    .insight-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--case-color); margin-bottom: 16px; }
+    .insight-text { font-family: var(--font-display); font-size: clamp(20px, 2.2vw, 28px); font-weight: 300; color: var(--fg); line-height: 1.5; }
+    .insight-text em { font-style: italic; color: var(--accent2); }
+
+    /* Results */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .result-item { background: var(--bg2); padding: 48px 40px; }
+    .result-num { font-family: var(--font-display); font-size: clamp(52px, 6vw, 80px); font-weight: 300; color: var(--fg); line-height: 1; margin-bottom: 8px; }
+    .result-num span { font-style: italic; color: var(--accent2); }
+    .result-label { font-family: var(--font-mono); font-size: 13px; color: var(--fg-dim); letter-spacing: 0.08em; line-height: 1.6; }
+
+    /* Image placeholder strips */
+    .img-strip { display: grid; gap: 16px; padding: 0 48px 60px; }
+    .img-strip.cols-2 { grid-template-columns: 1fr 1fr; }
+    .img-strip.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .img-strip.cols-12 { grid-template-columns: 1.4fr 1fr; }
+    .img-placeholder {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-placeholder::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 100%);
+    }
+    .img-placeholder-label {
+      position: relative; z-index: 1;
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--fg-dim); opacity: 0.5;
+    }
+    .h-300 { height: 300px; }
+    .h-200 { height: 200px; }
+    .h-400 { height: 400px; }
+    .h-480 { height: 480px; }
+
+    /* Mockup with device frame */
+    .device-mockup {
+      padding: 60px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      background: var(--bg2);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin: 0 0 60px;
+    }
+    .browser-frame {
+      background: #1a1a18;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 60px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
+      flex: 1;
+      max-width: 780px;
+    }
+    .browser-bar {
+      background: #222220;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .browser-dots { display: flex; gap: 6px; }
+    .browser-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .browser-dot:nth-child(1) { background: #ff5f57; }
+    .browser-dot:nth-child(2) { background: #febc2e; }
+    .browser-dot:nth-child(3) { background: #28c840; }
+    .browser-url { flex: 1; background: #2a2a28; border-radius: 4px; padding: 5px 12px; font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim); margin-left: 8px; }
+    .browser-content { }
+
+    /* Next case */
+    .next-case {
+      border-top: 1px solid var(--line);
+      padding: 80px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+      background: var(--bg2);
+      transition: background 0.4s;
+    }
+    .next-case:hover { background: var(--bg3); }
+    .next-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 16px; }
+    .next-title { font-family: var(--font-display); font-size: clamp(40px, 5vw, 68px); font-weight: 300; color: var(--fg); }
+    .next-title em { font-style: italic; color: var(--accent2); }
+    .next-arrow { font-size: 40px; color: var(--accent); transition: transform 0.3s; }
+    .next-case:hover .next-arrow { transform: translateX(12px); }
+
+    footer { border-top: 1px solid var(--line); padding: 28px 48px; display: flex; justify-content: space-between; }
+    footer span { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; color: var(--fg-dim); }
+
+    .reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    @media (max-width: 768px) {
+      nav .nav-inner, nav.scrolled .nav-inner { padding: 20px 24px; }
+      nav.scrolled .nav-inner { padding-top: 20px; padding-bottom: 20px; }
+      .case-hero-inner { padding: 0 24px 56px; }
+      .overview-band { grid-template-columns: 1fr; gap: 24px; padding: 48px 24px; }
+      .case-section { padding: 60px 24px; }
+      .section-header, .section-body { grid-template-columns: 1fr; gap: 24px; }
+      .process-grid { grid-template-columns: 1fr 1fr; }
+      .results-grid { grid-template-columns: 1fr; }
+      .img-strip { padding: 0 24px 40px; }
+      .img-strip.cols-2, .img-strip.cols-3, .img-strip.cols-12 { grid-template-columns: 1fr; }
+      .device-mockup { padding: 40px 24px; flex-direction: column; }
+      .next-case { padding: 60px 24px; flex-direction: column; align-items: flex-start; gap: 32px; }
+      footer { padding: 20px 24px; }
+      .case-hero-index { display: none; }
+    }
+    /* MAX WIDTH — content only, background fills viewport */
+    body { position: relative; }
+    .page-wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .nav-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 48px;
+      transition: padding 0.4s;
+    }
+    .case-hero-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 100vh;
+      padding: 0 48px 80px;
+    }
+  
+    /* ===== EDP Negócio 2.0 case — extra styles ===== */
+    :root { --case-color: #e2614f; --case-color-dim: rgba(226,97,79,0.12); }
+    .case-hero-bg {
+      background: radial-gradient(ellipse 80% 60% at 60% 30%, rgba(226,97,79,0.16) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 20% 70%, rgba(226,97,79,0.06) 0%, transparent 60%);
+    }
+    .shot { margin: 0; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08); }
+    .shot img { display: block; width: 100%; height: auto; }
+    .fig { display: flex; flex-direction: column; gap: 14px; }
+    .fig-caption { font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); letter-spacing: 0.06em; line-height: 1.7; }
+    .img-strip.align-start { align-items: start; }
+    .section-body > *, .img-strip > * { min-width: 0; }
+    .sub-title { font-family: var(--font-sans); font-size: 18px; font-weight: 600; margin: 72px 0 0; }
+
+    .team-note { display: grid; grid-template-columns: 200px 1fr; gap: 60px; padding: 80px 48px 100px; }
+    .team-note p { font-family: var(--font-display); font-size: clamp(20px, 2vw, 26px); font-weight: 300; line-height: 1.55; color: var(--fg); max-width: 760px; }
+    .team-note p em { font-style: italic; color: var(--accent2); }
+
+    /* Journey before / after */
+    .journey { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 48px; }
+    .journey-col { background: var(--bg); padding: 36px 32px; }
+    .journey-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; }
+    .journey-head h3 { font-family: var(--font-sans); font-size: 16px; font-weight: 600; }
+    .journey-head span { font-family: var(--font-display); font-size: 44px; font-weight: 300; color: var(--accent2); line-height: 1; }
+    .stages { list-style: none; display: flex; flex-direction: column; gap: 8px; counter-reset: st; }
+    .stages li { counter-increment: st; display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 12px 16px; border: 1px solid var(--line); font-family: var(--font-mono); font-size: 12px; color: var(--fg); }
+    .stages li::before { content: counter(st, decimal-leading-zero); color: var(--fg-dim); margin-right: 14px; }
+    .stages li span { flex: 1; }
+    .stages li small { font-size: 10px; color: var(--fg-dim); letter-spacing: 0.04em; text-align: right; }
+    .stages li.gone { color: var(--fg-dim); text-decoration: line-through; text-decoration-color: rgba(226,97,79,0.7); }
+    .stages li.gone small { text-decoration: none; color: var(--case-color); }
+    .journey-col.after .stages li { border-color: rgba(226,97,79,0.35); background: var(--case-color-dim); }
+
+    /* Pain table */
+    .table-wrap { overflow-x: auto; margin-top: 40px; border: 1px solid var(--line); }
+    .pain-table { width: 100%; min-width: 680px; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+    .pain-table th { text-align: left; font-weight: 400; color: var(--fg-dim); letter-spacing: 0.1em; text-transform: uppercase; font-size: 9px; padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+    .pain-table td { padding: 16px 18px; border-bottom: 1px solid var(--line); color: var(--fg); line-height: 1.6; vertical-align: top; }
+    .pain-table td:first-child { font-family: var(--font-sans); font-weight: 600; font-size: 14px; }
+    .pain-table tr:last-child td { border-bottom: none; }
+
+    /* Quotes */
+    .quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 48px; }
+    .quote { background: var(--bg2); padding: 32px 28px; display: flex; flex-direction: column; justify-content: space-between; gap: 20px; }
+    .quote p { font-family: var(--font-display); font-size: 21px; font-weight: 300; line-height: 1.45; color: var(--fg); }
+    .quote span { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--case-color); }
+    .quotes-note { font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); margin-top: 14px; }
+
+    /* Principles */
+    .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 48px; }
+    .principle { background: var(--bg); padding: 36px 32px; }
+    .principle h3 { font-family: var(--font-sans); font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+    .principle p { font-family: var(--font-mono); font-size: 12px; color: var(--fg-dim); line-height: 1.8; }
+
+    /* Tabs strip */
+    .tabs-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+    .tabs-strip span { font-family: var(--font-mono); font-size: 11px; color: var(--fg); padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; }
+
+    /* Auto rules */
+    .rules { margin-top: 28px; border-top: 1px solid var(--line); }
+    .rule { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 12px; line-height: 1.7; }
+    .rule b { color: var(--fg); font-weight: 400; }
+    .rule span { color: var(--fg-dim); }
+
+    @media (max-width: 1024px) {
+      .quotes, .principles { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .journey, .quotes, .principles { grid-template-columns: 1fr; }
+      .team-note { grid-template-columns: 1fr; gap: 16px; padding: 60px 24px; }
+      .rule { grid-template-columns: 1fr; gap: 4px; }
+      .case-hero-meta { flex-wrap: wrap; gap: 28px 40px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .case-eyebrow, .case-title, .case-hero-meta { animation: none; opacity: 1; }
+      .noise, .noise::after { animation: none; }
+    }
+  
+    .process-step { min-width: 0; overflow-wrap: break-word; }
+    @media (max-width: 520px) { .process-grid, .process-grid.five { grid-template-columns: 1fr; } }
+    /* Language switch */
+    .nav-right { display: flex; align-items: center; gap: 28px; }
+    .lang-switch { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-dim); text-decoration: none; transition: color 0.3s; }
+    .lang-switch:hover, .lang-switch:focus-visible { color: var(--fg); }
+    .lang-switch b { color: var(--fg); font-weight: 400; }
+</style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <nav id="mainNav">
+    <div class="nav-inner">    <a href="index.html" class="nav-logo"><span class="nav-monogram">af.</span> Ana Figueiredo</a>
+    <div class="nav-right"><a class="lang-switch" href="pt/case-edp-negocio-2.html" data-lang="pt" hreflang="pt-BR" aria-label="Ver em português"><b>EN</b> / PT</a><a href="index.html" class="nav-back">Home</a></div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="case-hero">
+    <div class="case-hero-bg"></div>
+    <div class="case-hero-inner">
+    <div class="case-hero-index">01</div>
+    <div class="case-hero-content">
+      <p class="case-eyebrow">Case Study — 01 / 03</p>
+      <h1 class="case-title">EDP<br><em>Negócio 2.0</em></h1>
+      <div class="case-hero-meta">
+        <div class="meta-group">
+          <span class="meta-label">Role</span>
+          <span class="meta-value">UX Designer</span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Team</span>
+          <span class="meta-value">UX Designer, PO, architect &amp; developers</span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Type</span>
+          <span class="meta-value">Sales journey redesign</span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Platform</span>
+          <span class="meta-value">Microsoft Dynamics 365 CRM</span>
+        </div>
+        <div class="meta-group">
+          <span class="meta-label">Year</span>
+          <span class="meta-value">2025</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <div class="page-wrap">
+
+  <!-- OVERVIEW -->
+  <div class="overview-band reveal">
+    <div class="overview-label">Overview</div>
+    <p class="overview-text">
+      Selling energy in Brazil's free market means a long chain of data, pricing, approvals and signatures. EDP's sales team was closing these deals by stitching together <em>fragments of the CRM, spreadsheets and e-mail</em>. Negócio 2.0 puts the whole sale in one guided record, with fewer stages, data carried over from earlier steps and a clear view of where each deal stands.
+    </p>
+  </div>
+
+  <div class="device-mockup reveal">
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dots"><div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div></div>
+        <div class="browser-url">Dynamics 365 — B2B Energia · Negócio 2.0</div>
+      </div>
+      <div class="browser-content">
+        <img src="assets/cases/edp-negocio-2/tobe-proposal.webp" alt="Redesigned Negócio 2.0 record in Dynamics 365: stage bar, tabs and the proposal tab with client data, consumer units and product pricing" style="display:block;width:100%;height:auto;" width="1440" height="1400">
+      </div>
+    </div>
+  </div>
+
+  <!-- 01 Challenge -->
+  <div class="case-section reveal">
+    <div class="section-header">
+      <div class="section-num">01 — Challenge</div>
+      <h2 class="section-title">A sale split into<br><em>too many pieces</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div>
+        <div class="section-body-text">
+          <p>To contract energy on the free market, a sales rep qualifies the client, configures a package, prices it, sends an indicative proposal, collects documents, gets internal approval and manages the contract signatures. In the existing CRM, each of these moments lived in a different place.</p>
+          <p>Reps re-entered the same data for every branch of a client, checked prices against e-mails, calculated margins in Excel and asked on Teams who had approved or signed. <strong>Some stages had no real action</strong>: reps just clicked through them. Others locked the deal, so a small change meant starting over.</p>
+          <p>We wanted one linear journey, with everything the rep needs in one place and every step, approval and signature visible.</p>
+        </div>
+        <div class="insight-block">
+          <div class="insight-label">Key Insight</div>
+          <p class="insight-text">Reps didn't trust the system. They kept <em>their own notes, spreadsheets and checks</em> because the CRM didn't show what was saved, what was missing or what came next.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 Process -->
+  <div class="case-section" style="background: var(--bg2);">
+    <div class="section-header reveal">
+      <div class="section-num">02 — Process</div>
+      <h2 class="section-title">How we got<br><em>there</em></h2>
+    </div>
+    <div class="process-grid reveal">
+      <div class="process-step" data-num="1">
+        <div class="process-step-label">As-Is</div>
+        <div class="process-step-title">Service blueprint</div>
+        <div class="process-step-text">The current sales journey mapped end to end, from the rep's actions to the backoffice responsibilities behind each stage.</div>
+      </div>
+      <div class="process-step" data-num="2">
+        <div class="process-step-label">Research</div>
+        <div class="process-step-title">Interviews by stage</div>
+        <div class="process-step-text">Sessions with sales users, consolidated stage by stage into pain points, insights and user quotes.</div>
+      </div>
+      <div class="process-step" data-num="3">
+        <div class="process-step-label">Synthesis</div>
+        <div class="process-step-title">Pain classification</div>
+        <div class="process-step-text">Pains tagged as systemic, process, cognitive or emotional, revealing which stages were redundant and where the system broke trust.</div>
+      </div>
+      <div class="process-step" data-num="4">
+        <div class="process-step-label">To-Be</div>
+        <div class="process-step-title">Redesign &amp; decisions</div>
+        <div class="process-step-text">A restructured journey designed in Figma on top of Dynamics, with decision sessions alongside the PO, the architect and developers for each sprint.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team note -->
+  <div class="team-note reveal">
+    <div class="section-num">Team</div>
+    <p>I was the UX designer in a squad with a product owner, a solution architect and developers. The sales reps we interviewed <em>shaped the research</em> from the start.</p>
+  </div>
+
+  <!-- 03 Research -->
+  <div class="case-section reveal">
+    <div class="section-header">
+      <div class="section-num">03 — Research</div>
+      <h2 class="section-title">What the reps<br><em>told us</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div class="section-body-text">
+        <p>We gave each stage of the journey its own board: the goal of the stage, pain points, insights and what users said. Then we compared the stages to see which kind of pain showed up where.</p>
+        <p>Registration was the biggest technical bottleneck: duplicated data, required fields that made no sense and no data carried over between lead, account and deal. A simple flow could take <strong>30 to 40 minutes</strong>, and a client with ten branches meant repeating it ten times.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="pain-table">
+        <thead><tr><th>Pain type</th><th>Frequency</th><th>Most affected stages</th><th>What it pointed to</th></tr></thead>
+        <tbody>
+          <tr><td>Technical</td><td>Very high</td><td>Registration, proposal, formalization</td><td>Integration and automation failures, a shared priority for UX and IT</td></tr>
+          <tr><td>Process</td><td>High</td><td>Proposal, indicative offer, formalization</td><td>Redundant stages and a non-linear journey</td></tr>
+          <tr><td>Cognitive</td><td>Medium / high</td><td>Qualification, pricing, approval</td><td>Missing feedback and contextual guidance</td></tr>
+          <tr><td>Emotional</td><td>Medium</td><td>All</td><td>Insecurity and distrust: "I need to double-check", "I don't know if it saved"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quotes">
+      <div class="quote"><p>"What should take 10 minutes turns into almost an hour."</p><span>Proposal</span></div>
+      <div class="quote"><p>"If the client has ten branches, I have to register everything again."</p><span>Registration</span></div>
+      <div class="quote"><p>"Change a comma and you're back to square one."</p><span>Indicative offer</span></div>
+      <div class="quote"><p>"The signer's name is already in the CRM, but I have to enter it all again in DocuSign."</p><span>Signatures</span></div>
+      <div class="quote"><p>"I have to ask on Teams who approved it."</p><span>Approval</span></div>
+      <div class="quote"><p>"We don't know if the client was billed, integrated or migrated."</p><span>Conclusion</span></div>
+    </div>
+    <p class="quotes-note">Quotes translated from Portuguese.</p>
+  </div>
+
+  <!-- 04 Journey -->
+  <div class="case-section reveal" style="background: var(--bg2);">
+    <div class="section-header">
+      <div class="section-num">04 — Restructuring</div>
+      <h2 class="section-title">From ten stages<br><em>to five</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div class="section-body-text">
+        <p>Several stages added clicks without adding anything for the rep. Screening repeated the registration checks, sending the indicative offer was just a status change, and any adjustment during negotiation required a new proposal and a new approval.</p>
+        <p>We rebuilt the journey around what the rep actually does: <strong>build the proposal, get it approved, collect signatures, validate documents and close</strong>. Everything else became a tab inside the same record.</p>
+      </div>
+    </div>
+
+    <div class="journey">
+      <div class="journey-col before">
+        <div class="journey-head"><h3>As-Is journey</h3><span>10</span></div>
+        <ol class="stages">
+          <li><span>Lead / qualification</span></li>
+          <li><span>Proposal set-up</span></li>
+          <li class="gone"><span>Indicative offer sent</span><small>status only</small></li>
+          <li><span>Registration</span></li>
+          <li class="gone"><span>Screening</span><small>redundant</small></li>
+          <li class="gone"><span>Pricing</span><small>merged</small></li>
+          <li><span>Approval</span></li>
+          <li class="gone"><span>Negotiation</span><small>merged</small></li>
+          <li><span>Formalization</span></li>
+          <li><span>Conclusion</span></li>
+        </ol>
+      </div>
+      <div class="journey-col after">
+        <div class="journey-head"><h3>Negócio 2.0</h3><span>5</span></div>
+        <ol class="stages">
+          <li><span>Proposal</span><small>data, units, pricing, product</small></li>
+          <li><span>Internal approval</span><small>visible approvers</small></li>
+          <li><span>Contract signature</span><small>DocuSign status</small></li>
+          <li><span>Document validation</span></li>
+          <li><span>Conclusion</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 Solution -->
+  <div class="case-section reveal">
+    <div class="section-header">
+      <div class="section-num">05 — Solution</div>
+      <h2 class="section-title">One record,<br><em>one clear path</em></h2>
+    </div>
+    <div class="section-body">
+      <div></div>
+      <div class="section-body-text">
+        <p>The new deal record has a stage bar at the top, so the rep always knows where the sale is and what comes next. When the proposal has all the identification, pricing and product data, it goes to internal approval. Once approved, it moves to signatures automatically.</p>
+        <p>All the information the rep needs is grouped into tabs inside the same deal:</p>
+        <div class="tabs-strip">
+          <span>Proposal</span><span>Tracking</span><span>Credit analysis</span><span>Contract signatures</span><span>Documents</span><span>Internal approval</span><span>Billing data</span><span>Other</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub-title">Design principles</h3>
+    <div class="principles">
+      <div class="principle"><h3>Progressive disclosure</h3><p>Ask for and show only what each step needs. Less on screen means fewer errors.</p></div>
+      <div class="principle"><h3>Human-centered efficiency</h3><p>Based on ISO 9241-210: help the rep get the job done with less effort, and cut steps that don't help the sale.</p></div>
+      <div class="principle"><h3>Governance-oriented design</h3><p>Design for the rep, and also for audit, traceability, legal compliance and clear ownership of each decision.</p></div>
+    </div>
+
+    <h3 class="sub-title">Data that fills itself</h3>
+    <div class="rules">
+      <div class="rule"><b>Supply start</b><span>Today + 180 days, rounded to the first day of the next month.</span></div>
+      <div class="rule"><b>Supply end</b><span>Supply start + 3 years.</span></div>
+      <div class="rule"><b>Energy data</b><span>Inherited from the lead, with the option to edit.</span></div>
+      <div class="rule"><b>Partner fields</b><span>Shown only when the sale involves a commercial partner.</span></div>
+      <div class="rule"><b>Reference data</b><span>Read-only fields used for audit and integration, grouped in their own section, out of the rep's way.</span></div>
+    </div>
+  </div>
+
+  <div class="img-strip reveal">
+    <figure class="fig">
+      <div class="shot"><img src="assets/cases/edp-negocio-2/tobe-tracking-sla.webp" alt="Tracking tab with general deal information and SLA control for the sales rep, auditor and EDP signature" loading="lazy" width="1381" height="1010"></div>
+      <figcaption class="fig-caption">Tracking tab: deal summary and SLA control for each party involved.</figcaption>
+    </figure>
+  </div>
+  <div class="img-strip reveal">
+    <figure class="fig">
+      <div class="shot"><img src="assets/cases/edp-negocio-2/tobe-signatures.webp" alt="Contract signatures tab listing signers and their status, plus contract tracking with DocuSign envelope status and validity date" loading="lazy" width="1444" height="1100"></div>
+      <figcaption class="fig-caption">Signatures tab: who signs, the envelope status and the validity date, without leaving the CRM. Personal data blurred.</figcaption>
+    </figure>
+  </div>
+
+  <!-- 06 Results -->
+  <div class="case-section" style="background: var(--bg2);">
+    <div class="section-header reveal">
+      <div class="section-num">06 — Results</div>
+      <h2 class="section-title">The<br><em>impact</em></h2>
+    </div>
+    <div class="results-grid reveal">
+      <div class="result-item">
+        <div class="result-num"><span>10</span>→5</div>
+        <div class="result-label">Journey stages, after removing<br>and merging redundant ones</div>
+      </div>
+      <div class="result-item">
+        <div class="result-num"><span>1</span></div>
+        <div class="result-label">Deal record holding proposal,<br>approvals, documents and signatures</div>
+      </div>
+      <div class="result-item">
+        <div class="result-num"><span>8</span></div>
+        <div class="result-label">Tabs organizing everything<br>the rep needs to close a sale</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next case -->
+  <a href="case-comgas-ds.html" class="next-case">
+    <div>
+      <p class="next-label">Next Case — 02 / 03</p>
+      <h2 class="next-title">Comgás<br><em>Design System</em></h2>
+    </div>
+    <span class="next-arrow">→</span>
+  </a>
+
+  <footer>
+    <span>© 2026 Ana Figueiredo</span>
+    <span>UX Designer — Brazil</span>
+  </footer>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; cursor.style.left = mouseX+'px'; cursor.style.top = mouseY+'px'; });
+    (function animRing() { ringX += (mouseX-ringX)*0.12; ringY += (mouseY-ringY)*0.12; cursorRing.style.left = ringX+'px'; cursorRing.style.top = ringY+'px'; requestAnimationFrame(animRing); })();
+    const reveals = document.querySelectorAll('.reveal');
+    new IntersectionObserver((entries) => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');} }), {threshold:0.08, rootMargin:'0px 0px -50px 0px'}).observe || null;
+    const obs = new IntersectionObserver((entries) => entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); } }), {threshold:0.08});
+    reveals.forEach(el => obs.observe(el));
+  
+    // NAV SCROLL
+    var navEl = document.getElementById('mainNav');
+    window.addEventListener('scroll', function() {
+      navEl.classList.toggle('scrolled', window.scrollY > 40);
+    });
+  </script>
+  </div><!-- /.page-wrap -->
+<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-lang]");if(a){try{localStorage.setItem("lang",a.getAttribute("data-lang"))}catch(_){}}});</script>
+</body>
+</html>
